@@ -1,4 +1,4 @@
-package com.example.cgpacalulator;
+package com.example.cgpacalculator;
 
 import org.junit.Test;
 

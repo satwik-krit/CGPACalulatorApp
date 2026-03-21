@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CGPA Calulator"
+rootProject.name = "CGPA calculator"
 include ':app'

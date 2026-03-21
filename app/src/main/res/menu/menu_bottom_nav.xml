@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+            android:id="@+id/homeFragment"
+            android:icon="@drawable/ic_home"
+            android:title="Home" />
+
+        <item
+            android:id="@+id/graphFragment"
+            android:icon="@drawable/ic_graph"
+            android:title="Graph" />
+
+        <item
+            android:id="@+id/targetFragment"
+            android:icon="@drawable/ic_target"
+            android:title="Target" />
+
+        <item
+            android:id="@+id/sandboxFragment"
+            android:icon="@drawable/ic_sandbox"
+            android:title="Sandbox" />
+
+        <item
+            android:id="@+id/reportFragment"
+            android:icon="@drawable/ic_report"
+            android:title="Report" />
+
+</menu>
