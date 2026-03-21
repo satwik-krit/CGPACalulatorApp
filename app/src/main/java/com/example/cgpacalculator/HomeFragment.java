@@ -1,8 +1,5 @@
 package com.example.cgpacalculator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,103 +17,112 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HomeFragment extends Fragment {
-        private List<Course> courseList = new ArrayList<Course>();
-        private LinearLayout layoutCourseRows;
-        private TextView tvCgpa, tvTotalCredits;
-        private LinearProgressIndicator progressCgpa;
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_home, container, false);
-        }
+    private List<Course> courseList = new ArrayList<Course>();
+    StorageHelper storage;
+    private LinearLayout layoutCourseRows;
+    private TextView tvCgpa, tvTotalCredits;
+    private LinearProgressIndicator progressCgpa;
 
-        // Start manipulating data AFTER the view is created.
-        @Override
-        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-            super.onViewCreated(view, savedInstanceState);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_home, container, false);
+    }
 
-            progressCgpa = view.findViewById(R.id.progressCgpa);
-            tvCgpa = view.findViewById(R.id.tvCgpa);
-            tvTotalCredits = view.findViewById(R.id.tvTotalCredits);
-            layoutCourseRows = view.findViewById(R.id.layoutCourseRows);
+    // Start manipulating data AFTER the view is created.
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-            // set your real values here
-            double cgpa = 8.74;
-            int totalCredits = 48;
+        storage = new StorageHelper(requireContext());
+        courseList = storage.loadCourses();
 
-            tvCgpa.setText(String.valueOf(cgpa));
-            tvTotalCredits.setText(totalCredits + " credits");
-            progressCgpa.setProgress((int)((cgpa / 10.0) * 100));
+        progressCgpa = view.findViewById(R.id.progressCgpa);
+        tvCgpa = view.findViewById(R.id.tvCgpa);
+        tvTotalCredits = view.findViewById(R.id.tvTotalCredits);
+        layoutCourseRows = view.findViewById(R.id.layoutCourseRows);
 
-            view.findViewById(R.id.btnAddCourse).setOnClickListener(v -> showAddCourse());
-        }
+        // set your real values here
+        double cgpa = 8.74;
+        int totalCredits = 48;
 
-        private void showAddCourse() {
-            BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+        tvCgpa.setText(String.valueOf(cgpa));
+        tvTotalCredits.setText(totalCredits + " credits");
+        progressCgpa.setProgress((int) ((cgpa / 10.0) * 100));
 
-            View sheetView = LayoutInflater.from(requireContext()).
-                            inflate(R.layout.dialog_add_course, null);
-            sheet.setContentView(sheetView);
+        view.findViewById(R.id.btnAddCourse).setOnClickListener(v -> showAddCourse());
+        updateUI();
+    }
 
-            TextInputEditText etName    = sheetView.findViewById(R.id.etCourseName);
-            TextInputEditText etCredits = sheetView.findViewById(R.id.etCredits);
-            AutoCompleteTextView actvGrade = sheetView.findViewById(R.id.actvGrade);
+    private void showAddCourse() {
+        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
 
-            // set up grade dropdown
-            String[] grades = {"A", "A-", "B", "B-", "C", "C-", "D", "F"};
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                    requireContext(),
-                    android.R.layout.simple_dropdown_item_1line,
-                    grades
+        View sheetView = LayoutInflater.from(requireContext()).
+                inflate(R.layout.dialog_add_course, null);
+        sheet.setContentView(sheetView);
+
+        TextInputEditText etName = sheetView.findViewById(R.id.etCourseName);
+        TextInputEditText etCredits = sheetView.findViewById(R.id.etCredits);
+        AutoCompleteTextView actvGrade = sheetView.findViewById(R.id.actvGrade);
+
+        // set up grade dropdown
+        String[] grades = {"A", "A-", "B", "B-", "C", "C-", "D", "F"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                grades
+        );
+        actvGrade.setAdapter(adapter);
+        actvGrade.setText(grades[0], false); // default to O
+
+        // Cancel button
+        sheetView.findViewById(R.id.btnCancel)
+                .setOnClickListener(v -> sheet.dismiss());
+
+        // Save button
+        sheetView.findViewById(R.id.btnSave).setOnClickListener(v -> {
+            String name = etName.getText().toString().trim();
+            String credits = etCredits.getText().toString().trim();
+            String grade = actvGrade.getText().toString().trim();
+
+            // validate — don't save empty fields
+            if (name.isEmpty()) {
+                etName.setError("Enter a course name");
+                return;
+            }
+            if (credits.isEmpty()) {
+                etCredits.setError("Enter credits");
+                return;
+            }
+
+            // create the course and add to list
+            Course course = new Course(
+                    name,
+                    Integer.parseInt(credits),
+                    grade
             );
-            actvGrade.setAdapter(adapter);
-            actvGrade.setText(grades[0], false); // default to O
+            courseList.add(course);
+            sheet.dismiss();
+            storage.saveCourses(courseList);
+            updateUI(); // recalculate and refresh
+        });
 
-            // Cancel button
-            sheetView.findViewById(R.id.btnCancel)
-                    .setOnClickListener(v -> sheet.dismiss());
-
-            // Save button
-            sheetView.findViewById(R.id.btnSave).setOnClickListener(v -> {
-                String name    = etName.getText().toString().trim();
-                String credits = etCredits.getText().toString().trim();
-                String grade   = actvGrade.getText().toString().trim();
-
-                // validate — don't save empty fields
-                if (name.isEmpty()) {
-                    etName.setError("Enter a course name");
-                    return;
-                }
-                if (credits.isEmpty()) {
-                    etCredits.setError("Enter credits");
-                    return;
-                }
-
-                // create the course and add to list
-                Course course = new Course(
-                        name,
-                        Integer.parseInt(credits),
-                        grade
-                );
-                courseList.add(course);
-
-                sheet.dismiss();
-                updateUI(); // recalculate and refresh
-            });
-
-            sheet.show();
-        }
+        sheet.show();
+    }
 
     // recalculates CGPA and updates all views
     private void updateUI() {
-            refreshCourseRows();
+        refreshCourseRows();
         double totalWeighted = 0;
-        int    totalCredits   = 0;
+        int totalCredits = 0;
 
         for (Course c : courseList) {
             totalWeighted += c.getGradePoints() * c.getCredits();
-            totalCredits  += c.getCredits();
+            totalCredits += c.getCredits();
         }
 
         if (totalCredits == 0) {
@@ -128,40 +134,40 @@ public class HomeFragment extends Fragment {
 
         double cgpa = totalWeighted / totalCredits;
         tvCgpa.setText(String.format("%.2f", cgpa));
-        progressCgpa.setProgress((int)((cgpa / 10.0) * 100));
+        progressCgpa.setProgress((int) ((cgpa / 10.0) * 100));
         setTotalCredits(totalCredits);
     }
 
     private void refreshCourseRows() {
-            layoutCourseRows.removeAllViews();
+        layoutCourseRows.removeAllViews();
 
-            LayoutInflater inflater = LayoutInflater.from(requireContext());
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
 
-            for (int i = 0; i < courseList.size(); i++) {
-                Course course = courseList.get(i);
-                View row = inflater.inflate(
-                        R.layout.item_course_row,
-                        layoutCourseRows,
-                        false
-                );
+        for (int i = 0; i < courseList.size(); i++) {
+            Course course = courseList.get(i);
+            View row = inflater.inflate(
+                    R.layout.item_course_row,
+                    layoutCourseRows,
+                    false
+            );
 
-                TextInputEditText etName = row.findViewById(R.id.etCourseName);
-                TextInputEditText etCredits = row.findViewById(R.id.etCredits);
+            TextInputEditText etName = row.findViewById(R.id.etCourseName);
+            TextInputEditText etCredits = row.findViewById(R.id.etCredits);
 
-                etName.setText(course.getName());
-                etCredits.setText(String.valueOf(course.getCredits()));
-                etName.setEnabled(false);
-                etCredits.setEnabled(true);
+            etName.setText(course.getName());
+            etCredits.setText(String.valueOf(course.getCredits()));
+            etName.setEnabled(false);
+            etCredits.setEnabled(true);
 
-                final int index = i;
-                row.findViewById(R.id.btnRemoveCourse)
-                        .setOnClickListener(v -> {
-                            courseList.remove(index);
-                            updateUI();
-                        });
+            final int index = i;
+            row.findViewById(R.id.btnRemoveCourse)
+                    .setOnClickListener(v -> {
+                        courseList.remove(index);
+                        updateUI();
+                    });
 
-                layoutCourseRows.addView(row);
-            }
+            layoutCourseRows.addView(row);
+        }
     }
 
     private void setTotalCredits(int totalCredits) {
