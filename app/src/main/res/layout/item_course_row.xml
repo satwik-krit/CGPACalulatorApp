@@ -1,98 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingTop="8dp"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
     android:paddingEnd="12dp"
-    android:paddingBottom="8dp">
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
 
-    <!-- Course name input -->
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+    <!-- course name -->
+    <TextView
+        android:id="@+id/tvCourseName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:hint="Course name"
-        app:boxCornerRadiusBottomEnd="4dp"
-        app:boxCornerRadiusBottomStart="4dp"
-        app:boxCornerRadiusTopEnd="4dp"
-        app:boxCornerRadiusTopStart="4dp">
+        android:textSize="14sp"
+        android:textColor="?attr/colorOnSurface" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etCourseName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:textSize="13sp"
-            tools:text="Mathematics" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Credits input -->
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
-        android:layout_width="58dp"
+    <!-- credits -->
+    <TextView
+        android:id="@+id/tvCourseCredits"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:hint="Cr"
-        app:boxCornerRadiusBottomEnd="4dp"
-        app:boxCornerRadiusBottomStart="4dp"
-        app:boxCornerRadiusTopEnd="4dp"
-        app:boxCornerRadiusTopStart="4dp">
+        android:gravity="center"
+        android:textSize="13sp"
+        android:textColor="?attr/colorOnSurfaceVariant" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etCredits"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:inputType="number"
-            android:textSize="13sp"
-            tools:text="4" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Grade dropdown -->
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-        android:layout_width="70dp"
+    <!-- grade chip -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipCourseGrade"
+        style="@style/Widget.Material3.Chip.Assist"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:hint="Grade"
-        app:boxCornerRadiusBottomEnd="4dp"
-        app:boxCornerRadiusBottomStart="4dp"
-        app:boxCornerRadiusTopEnd="4dp"
-        app:boxCornerRadiusTopStart="4dp">
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp" />
 
-        <AutoCompleteTextView
-            android:id="@+id/actvGrade"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:inputType="none"
-            android:textSize="13sp"
-            tools:text="O" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Remove button -->
+    <!-- remove button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnRemoveCourse"
         style="@style/Widget.Material3.Button.IconButton"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="4dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:minWidth="0dp"
         android:minHeight="0dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:icon="@drawable/ic_close"
-        app:iconSize="18dp"
-        app:iconTint="?attr/colorOnSurfaceVariant" />
+        app:iconSize="16dp"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 
 </LinearLayout>

@@ -67,7 +67,7 @@
                     app:trackThickness="4dp"
                     android:progress="87" />
 
-                <!-- Bottom row: chip + credits -->
+                <!-- Bottom row: credits -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -100,6 +100,24 @@
             android:textSize="11sp"
             android:textStyle="bold" />
 
+        <!-- semester cards horizontal scroll -->
+        <HorizontalScrollView
+            android:id="@+id/hsvSemesters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:scrollbars="none"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:id="@+id/layoutSemesterCards"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
         <!-- Semester chips (horizontal scroll) -->
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -117,140 +135,56 @@
                 app:singleLine="true"
                 app:singleSelection="true">
 
-                <!-- Chips are added programmatically -->
-                <!-- Example chip for preview: -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAddSemester"
-                    style="@style/Widget.Material3.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="+ Add"
-                    tools:ignore="HardcodedText" />
-
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
         <!-- ── Courses Card ── -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardCourses"
-            style="@style/Widget.Material3.CardView.Outlined"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPagerSemesters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp">
+            android:layout_marginTop="10dp"
+            android:minHeight="200dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!-- Card header -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/colorSurfaceContainerLow"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingTop="10dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="10dp">
-
-                    <TextView
-                        android:id="@+id/tvSemesterTitle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Semester 1"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEditSemester"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Edit"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <!-- Column headers -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingStart="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="12dp"
-                    android:paddingBottom="2dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Course"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="11sp" />
-
-                    <TextView
-                        android:layout_width="58dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="Credits"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="11sp" />
-
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="Grade"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="11sp" />
-
-                    <View
-                        android:layout_width="32dp"
-                        android:layout_height="1dp" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="?attr/colorOutlineVariant" />
-
-                <!-- Course rows container (populated programmatically) -->
-                <LinearLayout
-                    android:id="@+id/layoutCourseRows"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <!-- Example course row (repeated programmatically) -->
-<!--                    <include layout="@layout/item_course_row" />-->
-
-                </LinearLayout>
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        <LinearLayout
+            android:id="@+id/layoutDots"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"/>
 
         <!-- ── FAB: Add Course ── -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddCourse"
-            style="@style/Widget.Material3.Button.TonalButton"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:text="+ Add Course"
-            app:cornerRadius="16dp" />
+            android:layout_height="wrap_content">
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddSemester"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="+ Add Semester"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
+                app:cornerRadius="16dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddCourse"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:text="+ Add Course"
+                app:cornerRadius="16dp" />
+
+        </LinearLayout>
         <!-- ── Metrics Row ── -->
         <LinearLayout
             android:layout_width="match_parent"

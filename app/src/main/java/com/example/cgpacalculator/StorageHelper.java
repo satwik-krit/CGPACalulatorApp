@@ -13,7 +13,7 @@ import java.util.List;
 
 public class StorageHelper {
     private static final String PREFS_NAME = "cgpa_prefs";
-    private static final String KEY_COURSES = "courses";
+    private static final String KEY_SEMESTERS = "semesters";
 
     private static final String LOGCATTAG = "StorageHelper";
 
@@ -25,18 +25,28 @@ public class StorageHelper {
         gson = new Gson();
     }
 
-    public void saveCourses(List<Course> courseList) {
-        String json = gson.toJson(courseList);
-        prefs.edit().putString(KEY_COURSES, json).apply();
-        Log.d(LOGCATTAG, "Saved courses.");
+    public static double calculateCGPA(List<Semester> semesterList) {
+        double cgpa = 0.0;
+        int i = 0;
+        for (; i < semesterList.size(); i++) {
+            cgpa += semesterList.get(i).getSGPA();
+        }
+        cgpa /= i;
+        return cgpa;
     }
 
-    public List<Course> loadCourses() {
-        String json = prefs.getString(KEY_COURSES, null);
+    public void saveSemesters(List<Semester> semesters) {
+        String json = gson.toJson(semesters);
+        prefs.edit().putString(KEY_SEMESTERS, json).apply();
+        Log.d(LOGCATTAG, "Saved semesters..");
+    }
+
+    public List<Semester> loadSemesters() {
+        String json = prefs.getString(KEY_SEMESTERS, null);
         if (json == null) return new ArrayList<>();
         Log.d(LOGCATTAG, json);
 
-        Type type = new TypeToken<List<Course>>(){}.getType();
+        Type type = new TypeToken<List<Semester>>(){}.getType();
         return gson.fromJson(json, type);
     }
 }
