@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.cgpacalculator.HomeFragment"
+        android:label="Home" />
+    <fragment
+        android:id="@+id/graphFragment"
+        android:name="com.example.cgpacalculator.GraphFragment"
+        android:label="Graph" />
+    <fragment
+        android:id="@+id/targetFragment"
+        android:name="com.example.cgpacalculator.TargetFragment"
+        android:label="Target" />
+    <fragment
+        android:id="@+id/sandboxFragment"
+        android:name="com.example.cgpacalculator.SandboxFragment"
+        android:label="Sandbox" />
+    <fragment
+        android:id="@+id/reportFragment"
+        android:name="com.example.cgpacalculator.ReportFragment"
+        android:label="Report" />
+</navigation>
