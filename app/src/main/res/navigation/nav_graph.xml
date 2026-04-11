@@ -12,12 +12,15 @@
         android:id="@+id/graphFragment"
         android:name="com.example.cgpacalculator.GraphFragment"
         android:label="Graph" />
+
     <fragment
-        android:id="@+id/targetFragment"
-        android:name="com.example.cgpacalculator.TargetFragment"
-        android:label="Target" />
+        android:id="@+id/targetCgpaFragment"
+        android:name="com.example.cgpacalculator.TargetCgpaFragment"
+        android:label="Target CGPA" />
+
     <fragment
-        android:id="@+id/sandboxFragment"
-        android:name="com.example.cgpacalculator.SandboxFragment"
-        android:label="Sandbox" />
+        android:id="@+id/backlogManagerFragment"
+        android:name="com.example.cgpacalculator.BacklogManagerFragment"
+        android:label="Backlog Manager" />
+
 </navigation>

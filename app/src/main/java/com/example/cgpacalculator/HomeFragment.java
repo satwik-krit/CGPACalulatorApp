@@ -114,6 +114,7 @@ public class HomeFragment extends Fragment {
                         refreshSemesterCards();
                         scrollToActiveCard();
                         renderDots();
+                        recalcFooter();
                     }
                 }
         );
@@ -325,7 +326,7 @@ public class HomeFragment extends Fragment {
 
             // fill in the card values
             ((TextView) card.findViewById(R.id.tvSemCardName))
-                    .setText(String.valueOf(i+1));
+                    .setText(String.valueOf(sem.getIndex()));
             ((TextView) card.findViewById(R.id.tvSemCardSpi))
                     .setText(sem.getTotalCredits() > 0
                             ? String.format("%.2f", sem.getSGPA())
@@ -338,8 +339,11 @@ public class HomeFragment extends Fragment {
 
             int finalI = i;
             card.setOnLongClickListener(v -> {
+                String courseList = "";
+                for (Course c : sem.getCourses()) courseList += c.getName() + '\n';
                 new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Semester " + sem.getIndex())
+                        .setTitle("Semester " + (finalI + 1))
+                        .setMessage(courseList)
                         .setPositiveButton("Delete", (dialog, which) -> {
                             // don't allow deleting the last semester
                             if (semesterList.size() == 1) {

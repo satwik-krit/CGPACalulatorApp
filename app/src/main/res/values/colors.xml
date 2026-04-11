@@ -6,4 +6,16 @@
     <color name="md_theme_primaryContainer">#EADDFF</color>
     <color name="md_theme_onPrimaryContainer">#21005D</color>
     <color name="colorPrimary">#6750A4</color>
+    <color name="colorOnSurface">#1C1B1F</color>
+    <color name="backlog_red_bg">#FFCDD2</color>
+    <color name="backlog_red_text">#B71C1C</color>
+
+    <color name="backlog_amber_bg">#FFE0B2</color>
+    <color name="backlog_amber_text">#E65100</color>
+
+    <color name="backlog_green_bg">#C8E6C9</color>
+    <color name="backlog_green_text">#1B5E20</color>
+
+    <color name="chip_green_text">#1B5E20</color>
+
 </resources>

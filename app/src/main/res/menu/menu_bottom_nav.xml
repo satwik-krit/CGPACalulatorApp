@@ -11,18 +11,12 @@
             android:title="Graph" />
 
         <item
-            android:id="@+id/targetFragment"
+            android:id="@+id/targetCgpaFragment"
             android:icon="@drawable/ic_target"
             android:title="Target" />
 
-<!--        <item-->
-<!--            android:id="@+id/sandboxFragment"-->
-<!--            android:icon="@drawable/ic_sandbox"-->
-<!--            android:title="Sandbox" />-->
-
         <item
-            android:id="@+id/reportFragment"
-            android:icon="@drawable/ic_report"
-            android:title="Report" />
-
+            android:id="@+id/backlogManagerFragment"
+            android:icon="@android:drawable/ic_dialog_alert"
+            android:title="Backlog" />
 </menu>
