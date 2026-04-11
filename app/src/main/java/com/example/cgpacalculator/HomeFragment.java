@@ -1,7 +1,6 @@
 package com.example.cgpacalculator;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,20 +9,24 @@ import android.widget.AutoCompleteTextView;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.w3c.dom.Text;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -36,7 +39,8 @@ public class HomeFragment extends Fragment {
     private LinearLayout layoutDots;
     StorageHelper storage;
     private LinearLayout layoutSemesterCards;
-    private TextView tvCgpa, tvTotalCredits;
+    private TextView tvCgpa, tvTotalCredits, tvFooterSgpa, tvFooterTotalCredits, tvSemCount;
+
     private LinearProgressIndicator progressCgpa;
 
     private static final String TAG = "HomeFragment";
@@ -52,6 +56,25 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        View scrollView = view.findViewById(R.id.main);
+
+        View bottomNav = requireActivity().findViewById(R.id.bottomNavView);
+
+        ViewCompat.setOnApplyWindowInsetsListener(scrollView, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int bottomNavHeight = bottomNav.getHeight();
+
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    v.getPaddingTop(),
+                    v.getPaddingRight(),
+                    bars.bottom + bottomNavHeight
+            );
+
+            return insets;
+        });
+
         storage = new StorageHelper(requireContext());
         semesterList = storage.loadSemesters();
         if (semesterList.size() == 0)
@@ -63,6 +86,9 @@ public class HomeFragment extends Fragment {
         tvCgpa = view.findViewById(R.id.tvCgpa);
         tvTotalCredits = view.findViewById(R.id.tvTotalCredits);
         layoutSemesterCards = view.findViewById(R.id.layoutSemesterCards);
+        tvFooterSgpa = view.findViewById(R.id.tvSpi);
+        tvFooterTotalCredits = view.findViewById(R.id.tvSemCredits);
+        tvSemCount = view.findViewById(R.id.tvSemCount);
 
         viewPager   = view.findViewById(R.id.viewPagerSemesters);
         layoutDots  = view.findViewById(R.id.layoutDots);
@@ -87,15 +113,14 @@ public class HomeFragment extends Fragment {
                         currentSemIndex = position;
                         refreshSemesterCards();
                         scrollToActiveCard();
-                        recalcFooter();
                         renderDots();
                     }
                 }
         );
 
         // set your real values here
-        double cgpa = 8.74;
-        int totalCredits = 48;
+        double cgpa = 0.0;
+        int totalCredits = 0;
 
         tvCgpa.setText(String.valueOf(cgpa));
         tvTotalCredits.setText(totalCredits + " credits");
@@ -109,10 +134,11 @@ public class HomeFragment extends Fragment {
                     updateUI();
                     scrollToActiveCard();
         });
+
         updateUI();
     }
 
-    private void recalcFooter() {
+    private void recalcHeader() {
         double cgpa         = StorageHelper.calculateCGPA(semesterList);
         int    totalCredits = 0;
         for (Semester s : semesterList)
@@ -126,6 +152,25 @@ public class HomeFragment extends Fragment {
             tvCgpa.setText(String.format("%.2f", cgpa));
             progressCgpa.setProgress((int)((cgpa / 10.0) * 100));
             tvTotalCredits.setText(totalCredits + " credits");
+        }
+    }
+
+    private void recalcFooter() {
+        int currentPage = viewPager.getCurrentItem();
+        Semester currentSemester = semesterList.get(currentPage);
+        double sgpa         = currentSemester.getSGPA();
+        int    totalCredits = currentSemester.getTotalCredits();
+        int    semCount     = 0;
+        for (Semester s : semesterList) semCount++;
+
+        tvSemCount.setText(Integer.toString(semCount));
+
+        if (totalCredits == 0) {
+            tvFooterSgpa.setText("–");
+            tvFooterTotalCredits.setText("0");
+        } else {
+            tvFooterSgpa.setText(String.format("%.2f", sgpa));
+            tvFooterTotalCredits.setText(Integer.toString(totalCredits));
         }
     }
 
@@ -237,25 +282,27 @@ public class HomeFragment extends Fragment {
     private void updateUI() {
         refreshSemesterCards();
         pagerAdapter.notifyDataSetChanged();
-        double totalWeighted = 0;
-        int totalCredits = 0;
-
-        for (Course c : semesterList.get(currentSemIndex).getCourses()) {
-            totalWeighted += c.getGradePoints() * c.getCredits();
-            totalCredits += c.getCredits();
-        }
-
-        if (totalCredits == 0) {
-            tvCgpa.setText("–");
-            progressCgpa.setProgress(0);
-            tvTotalCredits.setText("");
-            return;
-        }
-
-        double cgpa = totalWeighted / totalCredits;
-        tvCgpa.setText(String.format("%.2f", cgpa));
-        progressCgpa.setProgress((int) ((cgpa / 10.0) * 100));
-        setTotalCredits(totalCredits);
+        recalcHeader();
+        recalcFooter();
+//        double totalWeighted = 0;
+//        int totalCredits = 0;
+//
+//        for (Course c : semesterList.get(currentSemIndex).getCourses()) {
+//            totalWeighted += c.getGradePoints() * c.getCredits();
+//            totalCredits += c.getCredits();
+//        }
+//
+//        if (totalCredits == 0) {
+//            tvCgpa.setText("–");
+//            progressCgpa.setProgress(0);
+//            tvTotalCredits.setText("");
+//            return;
+//        }
+//
+//        double cgpa = totalWeighted / totalCredits;
+//        tvCgpa.setText(String.format("%.2f", cgpa));
+//        progressCgpa.setProgress((int) ((cgpa / 10.0) * 100));
+//        setTotalCredits(totalCredits);
     }
 
     private void refreshSemesterCards() {
@@ -271,15 +318,62 @@ public class HomeFragment extends Fragment {
                     false
             );
 
+            LinearLayout.LayoutParams params =
+                    (LinearLayout.LayoutParams) card.getLayoutParams();
+            params.setMarginEnd(dpToPx(8));
+            card.setLayoutParams(params);
+
             // fill in the card values
             ((TextView) card.findViewById(R.id.tvSemCardName))
-                    .setText(String.valueOf(sem.getIndex()));
+                    .setText(String.valueOf(i+1));
             ((TextView) card.findViewById(R.id.tvSemCardSpi))
                     .setText(sem.getTotalCredits() > 0
                             ? String.format("%.2f", sem.getSGPA())
                             : "–");
             ((TextView) card.findViewById(R.id.tvSemCardCredits))
                     .setText(String.valueOf(sem.getTotalCredits()));
+
+            ReportCardGenerator generator = new ReportCardGenerator(requireContext());
+
+
+            int finalI = i;
+            card.setOnLongClickListener(v -> {
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Semester " + sem.getIndex())
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            // don't allow deleting the last semester
+                            if (semesterList.size() == 1) {
+                                Toast.makeText(requireContext(),
+                                        "Can't delete the only semester",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            new MaterialAlertDialogBuilder(requireContext())
+                                    .setTitle("Delete " + sem.getIndex() + "?")
+                                    .setMessage("All courses in this semester will be deleted.")
+                                    .setNegativeButton("Cancel", null)
+                                    .setPositiveButton("Delete", (_dialog, _which) -> {
+                                        semesterList.remove(finalI);
+                                        // make sure currentSemIndex stays valid
+                                        if (currentSemIndex >= semesterList.size()) {
+                                            currentSemIndex = semesterList.size() - 1;
+                                        }
+                                        storage.saveSemesters(semesterList);
+                                        updateUI();
+                                    })
+                                    .show();
+                        })
+                        .setNegativeButton("Share", (dialog, which) -> {
+                            if (sem.getCourses().isEmpty()) {
+                                Toast.makeText(requireContext(),
+                                        "Add courses first", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            generator.generateAndShare(sem);
+                        })
+                        .show();
+                return true; // true means the long press was consumed
+            });
 
             // highlight the active card
             MaterialCardView cardView = card.findViewById(R.id.cardSemester);

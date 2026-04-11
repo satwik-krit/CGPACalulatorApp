@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="24px"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:id="@+id/tvReportCourseName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#1C1B1F"
+        android:textSize="22px" />
+
+    <TextView
+        android:id="@+id/tvReportCourseCredits"
+        android:layout_width="120px"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#1C1B1F"
+        android:textSize="22px" />
+
+    <TextView
+        android:id="@+id/tvReportCourseGrade"
+        android:layout_width="120px"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#6750A4"
+        android:textSize="22px"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvReportCoursePoints"
+        android:layout_width="120px"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#1C1B1F"
+        android:textSize="22px" />
+
+</LinearLayout>

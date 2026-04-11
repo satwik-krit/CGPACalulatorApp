@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="1080px"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#EADDFF"
+    android:padding="64px">
+
+    <!-- header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#6750A4"
+        android:padding="48px">
+
+        <TextView
+            android:id="@+id/tvReportTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Academic Report Card"
+            android:textColor="#FFFFFF"
+            android:textSize="36px"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvReportSemName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#EADDFF"
+            android:textSize="28px"
+            android:layout_marginTop="8px" />
+
+        <TextView
+            android:id="@+id/tvReportDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#EADDFF"
+            android:textSize="24px"
+            android:layout_marginTop="4px" />
+
+    </LinearLayout>
+
+    <!-- SPI + credits summary -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="32px"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="32px"
+            android:layout_marginEnd="16px">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Semester SPI"
+                android:textColor="#49454F"
+                android:textSize="22px" />
+
+            <TextView
+                android:id="@+id/tvReportSpi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6750A4"
+                android:textSize="64px"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="32px"
+            android:layout_marginStart="16px">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Credits"
+                android:textColor="#49454F"
+                android:textSize="22px" />
+
+            <TextView
+                android:id="@+id/tvReportCredits"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6750A4"
+                android:textSize="64px"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- course table header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#6750A4"
+        android:padding="24px"
+        android:layout_marginTop="32px">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Course"
+            android:textColor="#FFFFFF"
+            android:textSize="24px"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="120px"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Credits"
+            android:textColor="#FFFFFF"
+            android:textSize="24px"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="120px"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Grade"
+            android:textColor="#FFFFFF"
+            android:textSize="24px"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="120px"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Points"
+            android:textColor="#FFFFFF"
+            android:textSize="24px"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- course rows added programmatically -->
+    <LinearLayout
+        android:id="@+id/layoutReportRows"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFFFFF" />
+
+    <!-- footer -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Generated by CGPA Calculator"
+        android:textColor="#79747E"
+        android:textSize="20px"
+        android:layout_marginTop="32px"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

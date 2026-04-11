@@ -15,10 +15,10 @@
             android:icon="@drawable/ic_target"
             android:title="Target" />
 
-        <item
-            android:id="@+id/sandboxFragment"
-            android:icon="@drawable/ic_sandbox"
-            android:title="Sandbox" />
+<!--        <item-->
+<!--            android:id="@+id/sandboxFragment"-->
+<!--            android:icon="@drawable/ic_sandbox"-->
+<!--            android:title="Sandbox" />-->
 
         <item
             android:id="@+id/reportFragment"
