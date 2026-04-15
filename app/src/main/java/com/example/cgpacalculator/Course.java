@@ -5,22 +5,25 @@ public class Course {
     private int credits;
     private String grade;
 
-    public Course(String name, int credits, String grade) {
+    private int semesterNumber = 1;
+
+    public Course(String name, int credits, String grade, int semesterNumber) {
         this.name = name;
         this.credits = credits;
         this.grade = grade;
+        this.semesterNumber = semesterNumber;
     }
 
     public String getName() { return name; }
     public int getCredits() { return credits; }
     public String getGrade() { return grade; }
+    public int getSemesterNumber() { return semesterNumber; }
 
     public void setName(String name) { this.name  = name; }
-    public void settCredits(int credits) { this.credits = credits; }
+    public void setCredits(int credits) { this.credits = credits; }
     public void setGrade(String grade) { this.grade = grade; }
 
     public int getGradePoints() {
-        // TODO: Support for multiple formats
         switch(grade) {
             case "A": return 10;
             case "A-": return 9;

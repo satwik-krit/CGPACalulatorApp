@@ -12,6 +12,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,11 +42,17 @@ public class BacklogManagerFragment extends Fragment {
     private ChipGroup chipGroupFilter;
     private RecyclerView rvBacklogCourses;
     private LinearLayout layoutEmpty;
-    private ExtendedFloatingActionButton fabAddBacklog;
-
     private List<BacklogCourse> allCourses = new ArrayList<>();
     private BacklogAdapter adapter;
     private int currentFilter = FILTER_ALL;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Re-load from storage and update the UI
+        loadData();
+        refresh();
+    }
 
     @Nullable
     @Override
@@ -56,10 +65,30 @@ public class BacklogManagerFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        View bottomNav = requireActivity().findViewById(R.id.bottomNavView);
+
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() |
+                            WindowInsetsCompat.Type.displayCutout()
+            );
+
+            int bottomNavHeight = bottomNav.getHeight();
+
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    bars.top, // FIX: respect status bar + cutout
+                    v.getPaddingRight(),
+                    bars.bottom + bottomNavHeight
+            );
+
+            return insets;
+        });
+
         bindViews(view);
         setupRecyclerView();
         setupChipFilter();
-        fabAddBacklog.setOnClickListener(v -> showAddBacklogSheet());
         loadData();
         refresh();
     }
@@ -71,7 +100,6 @@ public class BacklogManagerFragment extends Fragment {
         chipGroupFilter = view.findViewById(R.id.chipGroupFilter);
         rvBacklogCourses = view.findViewById(R.id.rvBacklogCourses);
         layoutEmpty     = view.findViewById(R.id.layoutEmpty);
-        fabAddBacklog   = view.findViewById(R.id.fabAddBacklog);
     }
 
     private void setupRecyclerView() {

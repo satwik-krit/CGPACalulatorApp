@@ -1,5 +1,6 @@
 package com.example.cgpacalculator;
 
+import android.animation.ArgbEvaluator;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.card.MaterialCardView;
@@ -27,12 +31,10 @@ public class TargetCgpaFragment extends Fragment {
     private TextView tvSemestersDone;
     private TextView tvSemestersTotal;
     private TextView tvNeededSGPA;
+    private MaterialCardView neededSGPACard;
     private TextView tvNeededSub;
     private TextView tvSliderValue;
     private Slider sliderTargetCGPA;
-    private LinearLayout llSemesterBreakdown;
-    private MaterialCardView cardFeasibility;
-    private TextView tvFeasibility;
 
     private List<Semester> semesterList;
     private double currentCGPA;
@@ -50,10 +52,38 @@ public class TargetCgpaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        View bottomNav = requireActivity().findViewById(R.id.bottomNavView);
+
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() |
+                            WindowInsetsCompat.Type.displayCutout()
+            );
+
+            int bottomNavHeight = bottomNav.getHeight();
+
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    bars.top, // FIX: respect status bar + cutout
+                    v.getPaddingRight(),
+                    bars.bottom + bottomNavHeight
+            );
+
+            return insets;
+        });
         bindViews(view);
         loadData();
         setupSlider();
         updateUI();
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Re-load from storage and update the UI
+        loadData();
     }
 
     private void bindViews(View view) {
@@ -65,14 +95,12 @@ public class TargetCgpaFragment extends Fragment {
         tvNeededSub         = view.findViewById(R.id.tvNeededSub);
         tvSliderValue       = view.findViewById(R.id.tvSliderValue);
         sliderTargetCGPA    = view.findViewById(R.id.sliderTargetCGPA);
-        llSemesterBreakdown = view.findViewById(R.id.llSemesterBreakdown);
-        cardFeasibility     = view.findViewById(R.id.cardFeasibility);
-        tvFeasibility       = view.findViewById(R.id.tvFeasibility);
+        neededSGPACard      = view.findViewById(R.id.neededSGPACard);
     }
 
     private void loadData() {
         semesterList = StorageHelper.getInstance(requireContext()).loadSemesters();
-        currentCGPA = computeCGPA(semesterList);
+        currentCGPA = StorageHelper.getInstance(requireContext()).calculateCGPA(semesterList);
         completedSemesters = semesterList.size();
     }
 
@@ -99,8 +127,6 @@ public class TargetCgpaFragment extends Fragment {
         if (remaining <= 0) {
             tvNeededSGPA.setText("--");
             tvNeededSub.setText("all semesters done");
-            cardFeasibility.setVisibility(View.GONE);
-            buildBreakdown(0, 0);
             return;
         }
 
@@ -112,65 +138,10 @@ public class TargetCgpaFragment extends Fragment {
         double neededSGPA        = pointsRequired / remaining;
 
         tvNeededSGPA.setText(String.format("%.2f", neededSGPA));
+        neededSGPACard.setCardBackgroundColor(getColorFromValue((float) neededSGPA, 10, 7));
         tvNeededSub.setText("next " + remaining + " semester" + (remaining > 1 ? "s" : ""));
-
-        // Feasibility warning
-        if (neededSGPA > 10.0) {
-            cardFeasibility.setVisibility(View.VISIBLE);
-            tvFeasibility.setText("Target is not achievable — you would need an average SGPA of "
-                    + String.format("%.2f", neededSGPA) + ", which exceeds 10.0. Lower your target.");
-        } else {
-            cardFeasibility.setVisibility(View.GONE);
-        }
-
-        buildBreakdown(neededSGPA, remaining);
     }
 
-    private void buildBreakdown(double neededSGPA, int remaining) {
-        llSemesterBreakdown.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(requireContext());
-
-        for (int i = 1; i <= remaining; i++) {
-            int semNumber = completedSemesters + i;
-            View row = inflater.inflate(R.layout.item_semester_needed, llSemesterBreakdown, false);
-
-            TextView tvSemLabel  = row.findViewById(R.id.tvSemLabel);
-            TextView tvNeededVal = row.findViewById(R.id.tvNeededVal);
-            TextView tvChip      = row.findViewById(R.id.tvStatusChip);
-            ProgressBar progress = row.findViewById(R.id.progressSem);
-
-            tvSemLabel.setText("Semester " + semNumber);
-            tvNeededVal.setText("needs " + String.format("%.2f", neededSGPA));
-
-            int progressVal = (int) Math.min(100, neededSGPA / 10.0 * 100);
-            progress.setProgress(progressVal);
-
-            // Chip label and color
-            if (neededSGPA > 10.0) {
-                tvChip.setText("impossible");
-                tvChip.setBackgroundResource(R.drawable.bg_chip_red);
-                tvChip.setTextColor(requireContext().getColor(R.color.backlog_red_text));
-            } else if (neededSGPA >= 9.0) {
-                tvChip.setText("hard");
-                tvChip.setBackgroundResource(R.drawable.bg_chip_amber);
-                tvChip.setTextColor(requireContext().getColor(R.color.backlog_amber_text));
-            } else if (neededSGPA >= 7.5) {
-                tvChip.setText("stretch");
-                tvChip.setBackgroundResource(R.drawable.bg_chip_green);
-                tvChip.setTextColor(requireContext().getColor(R.color.backlog_green_text));
-            } else {
-                tvChip.setText("achievable");
-                tvChip.setBackgroundResource(R.drawable.bg_chip_green);
-                tvChip.setTextColor(requireContext().getColor(R.color.backlog_green_text));
-            }
-
-            llSemesterBreakdown.addView(row);
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // CGPA computation (credit-weighted across all semesters)
-    // -----------------------------------------------------------------------
     private double computeCGPA(List<Semester> semesters) {
         double totalWeighted = 0;
         int totalCredits = 0;
@@ -181,5 +152,19 @@ public class TargetCgpaFragment extends Fragment {
             }
         }
         return totalCredits == 0 ? 0.0 : totalWeighted / totalCredits;
+    }
+
+
+    private int getColorFromValue(float value, float min, float max) {
+        float fraction = (value - min) / (max - min);
+
+        // clamp between 0 and 1
+        fraction = Math.max(0f, Math.min(1f, fraction));
+
+        int startColor = 0xFFFF9E9E;
+        int endColor   = 0xFFA5D6A7;
+
+        ArgbEvaluator evaluator = new ArgbEvaluator();
+        return (int) evaluator.evaluate(fraction, startColor, endColor);
     }
 }

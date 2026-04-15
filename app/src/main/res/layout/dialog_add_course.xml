@@ -20,6 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Add Course"
+            android:id="@+id/tvSheetTitle"
             android:textSize="18sp"
             android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="20dp" />
@@ -68,6 +69,23 @@
                 android:layout_height="wrap_content"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- semester selector — only shown when editing -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilSemester"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Move to semester"
+        android:layout_marginBottom="12dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/actvSemester"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
         <!-- buttons -->
         <LinearLayout

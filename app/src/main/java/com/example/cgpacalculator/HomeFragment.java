@@ -1,6 +1,7 @@
 package com.example.cgpacalculator;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -31,6 +33,7 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
     private List<Semester> semesterList;
+    private List<BacklogCourse> backlogCourses;
     private List<Course> courseList;
     private int currentSemIndex = 0;
 
@@ -61,13 +64,16 @@ public class HomeFragment extends Fragment {
         View bottomNav = requireActivity().findViewById(R.id.bottomNavView);
 
         ViewCompat.setOnApplyWindowInsetsListener(scrollView, (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() |
+                            WindowInsetsCompat.Type.displayCutout()
+            );
 
             int bottomNavHeight = bottomNav.getHeight();
 
             v.setPadding(
                     v.getPaddingLeft(),
-                    v.getPaddingTop(),
+                    bars.top, // FIX: respect status bar + cutout
                     v.getPaddingRight(),
                     bars.bottom + bottomNavHeight
             );
@@ -77,8 +83,9 @@ public class HomeFragment extends Fragment {
 
         storage = new StorageHelper(requireContext());
         semesterList = storage.loadSemesters();
+        backlogCourses = storage.loadBacklogCourses();
         if (semesterList.size() == 0)
-            semesterList.add(new Semester(2));
+            semesterList.add(new Semester(1));
         currentSemIndex = 0;
         courseList = semesterList.get(currentSemIndex).getCourses();
 
@@ -97,15 +104,22 @@ public class HomeFragment extends Fragment {
                 requireContext(),
                 semesterList,
                 (semIndex, courseIndex) -> {
-                    // remove the course, save, refresh
+                    // existing remove logic
+                    Course removedCourse = semesterList.get(semIndex).getCourses().get(courseIndex);
+                    backlogCourses.removeIf(c -> c.getCourseName().equals(removedCourse.getName()));
                     semesterList.get(semIndex).getCourses().remove(courseIndex);
                     storage.saveSemesters(semesterList);
+                    storage.saveBacklogCourses(backlogCourses);
                     updateUI();
+                },
+                (semIndex, courseIndex) -> {
+                    // edit listener — open the edit sheet
+                    Course course = semesterList.get(semIndex).getCourses().get(courseIndex);
+                    showEditCourse(course, semIndex, courseIndex);
                 }
-        );
-        viewPager.setAdapter(pagerAdapter);
+        );        viewPager.setAdapter(pagerAdapter);
 
-// when user swipes, sync the semester cards at the top
+        // when user swipes, sync the semester cards at the top
         viewPager.registerOnPageChangeCallback(
                 new ViewPager2.OnPageChangeCallback() {
                     @Override
@@ -129,11 +143,16 @@ public class HomeFragment extends Fragment {
 
         view.findViewById(R.id.btnAddCourse).setOnClickListener(v -> showAddCourse());
         view.findViewById(R.id.btnAddSemester).setOnClickListener(v -> {
-                    semesterList.add(new Semester(semesterList.size() + 1));
-                    currentSemIndex = semesterList.size() - 1;
-                    storage.saveSemesters(semesterList);
-                    updateUI();
-                    scrollToActiveCard();
+            semesterList.add(new Semester(semesterList.size() + 1));
+            currentSemIndex = semesterList.size() - 1;
+            storage.saveSemesters(semesterList);
+            updateUI();
+
+            // move ViewPager FIRST
+            viewPager.setCurrentItem(currentSemIndex, true);
+
+            // then scroll cards AFTER layout settles
+            layoutSemesterCards.post(() -> scrollToActiveCard());
         });
 
         updateUI();
@@ -158,6 +177,12 @@ public class HomeFragment extends Fragment {
 
     private void recalcFooter() {
         int currentPage = viewPager.getCurrentItem();
+
+        if (currentPage >= semesterList.size()) {
+            currentPage = semesterList.size() - 1;
+        }
+        if (currentPage < 0) currentPage = 0;
+
         Semester currentSemester = semesterList.get(currentPage);
         double sgpa         = currentSemester.getSGPA();
         int    totalCredits = currentSemester.getTotalCredits();
@@ -228,6 +253,7 @@ public class HomeFragment extends Fragment {
 
         View sheetView = LayoutInflater.from(requireContext()).
                 inflate(R.layout.dialog_add_course, null);
+        sheetView.findViewById(R.id.tilSemester).setVisibility(View.GONE);
         sheet.setContentView(sheetView);
 
         TextInputEditText etName = sheetView.findViewById(R.id.etCourseName);
@@ -263,17 +289,26 @@ public class HomeFragment extends Fragment {
                 etCredits.setError("Enter credits");
                 return;
             }
-
             // create the course and add to list
             Course course = new Course(
                     name,
                     Integer.parseInt(credits),
-                    grade
+                    grade,
+                    currentSemIndex
             );
             semesterList.get(currentSemIndex).getCourses().add(course);
+            currentSemIndex = semesterList.size() - 1;
+
+            if (grade.equals("F")) {
+                List<BacklogCourse> backlogCourses = storage.loadBacklogCourses();
+                backlogCourses.add(new BacklogCourse(course));
+                storage.saveBacklogCourses(backlogCourses);
+            }
+
             sheet.dismiss();
             storage.saveSemesters(semesterList);
             updateUI(); // recalculate and refresh
+            scrollToActiveCard();
         });
 
         sheet.show();
@@ -285,25 +320,6 @@ public class HomeFragment extends Fragment {
         pagerAdapter.notifyDataSetChanged();
         recalcHeader();
         recalcFooter();
-//        double totalWeighted = 0;
-//        int totalCredits = 0;
-//
-//        for (Course c : semesterList.get(currentSemIndex).getCourses()) {
-//            totalWeighted += c.getGradePoints() * c.getCredits();
-//            totalCredits += c.getCredits();
-//        }
-//
-//        if (totalCredits == 0) {
-//            tvCgpa.setText("–");
-//            progressCgpa.setProgress(0);
-//            tvTotalCredits.setText("");
-//            return;
-//        }
-//
-//        double cgpa = totalWeighted / totalCredits;
-//        tvCgpa.setText(String.format("%.2f", cgpa));
-//        progressCgpa.setProgress((int) ((cgpa / 10.0) * 100));
-//        setTotalCredits(totalCredits);
     }
 
     private void refreshSemesterCards() {
@@ -342,7 +358,7 @@ public class HomeFragment extends Fragment {
                 String courseList = "";
                 for (Course c : sem.getCourses()) courseList += c.getName() + '\n';
                 new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Semester " + (finalI + 1))
+                        .setTitle("Semester " + sem.getIndex())
                         .setMessage(courseList)
                         .setPositiveButton("Delete", (dialog, which) -> {
                             // don't allow deleting the last semester
@@ -357,12 +373,29 @@ public class HomeFragment extends Fragment {
                                     .setMessage("All courses in this semester will be deleted.")
                                     .setNegativeButton("Cancel", null)
                                     .setPositiveButton("Delete", (_dialog, _which) -> {
+                                        for (Course course : semesterList.get(finalI).getCourses()) {
+                                            backlogCourses.removeIf(c -> c.getCourseName().equals(course.getName()));
+                                        }
+                                        // Delete all courses from the list of that semester.
+                                        semesterList.get(finalI).getCourses().clear();
                                         semesterList.remove(finalI);
-                                        // make sure currentSemIndex stays valid
+
+                                        // Fix index AFTER removal
                                         if (currentSemIndex >= semesterList.size()) {
                                             currentSemIndex = semesterList.size() - 1;
                                         }
+
+                                        if (currentSemIndex < 0) {
+                                            currentSemIndex = 0;
+                                        }
+
+                                        // Whenever we delete a semester, recalculate the indices of all
+                                        // semesters.
+                                        for (int j = 0; j < semesterList.size(); j++)
+                                            semesterList.get(j).setIndex(j+1);
+
                                         storage.saveSemesters(semesterList);
+                                        storage.saveBacklogCourses(backlogCourses);
                                         updateUI();
                                     })
                                     .show();
@@ -399,9 +432,12 @@ public class HomeFragment extends Fragment {
             }
 
             // tap to switch semester
-            final int index = i;
             card.setOnClickListener(v -> {
-                currentSemIndex = index;
+                currentSemIndex = finalI;
+
+                currentSemIndex = finalI;
+                viewPager.setCurrentItem(finalI, true);
+
                 updateUI();
                 scrollToActiveCard();
             });
@@ -428,6 +464,127 @@ public class HomeFragment extends Fragment {
 
     private void setTotalCredits(int totalCredits) {
         tvTotalCredits.setText(totalCredits + " credits");
+    }
+
+   private void showEditCourse(Course course, int semIndex, int courseIndex) {
+    BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+    View sheetView = LayoutInflater.from(requireContext())
+        .inflate(R.layout.dialog_add_course, null);
+    sheet.setContentView(sheetView);
+
+    // change title to Edit
+    TextView tvTitle = sheetView.findViewById(R.id.tvSheetTitle);
+    if (tvTitle != null) tvTitle.setText("Edit Course");
+
+    TextInputEditText    etName    = sheetView.findViewById(R.id.etCourseName);
+    TextInputEditText    etCredits = sheetView.findViewById(R.id.etCredits);
+    AutoCompleteTextView actvGrade = sheetView.findViewById(R.id.actvGrade);
+
+    // semester dropdown — new addition
+    AutoCompleteTextView actvSemester = sheetView.findViewById(R.id.actvSemester);
+
+    // pre-fill existing values
+    etName.setText(course.getName());
+    etCredits.setText(String.valueOf(course.getCredits()));
+
+    String[] grades = {"O", "A+", "A", "B+", "B", "C", "P", "F"};
+    ArrayAdapter<String> gradeAdapter = new ArrayAdapter<>(
+        requireContext(),
+        android.R.layout.simple_dropdown_item_1line,
+        grades
+    );
+    actvGrade.setAdapter(gradeAdapter);
+    actvGrade.setText(course.getGrade(), false);
+
+    // build semester options from current semester list
+    String[] semesterNames = new String[semesterList.size()];
+    for (int i = 0; i < semesterList.size(); i++) {
+        semesterNames[i] = "Semester " + semesterList.get(i).getIndex();
+    }
+    ArrayAdapter<String> semAdapter = new ArrayAdapter<>(
+        requireContext(),
+        android.R.layout.simple_dropdown_item_1line,
+        semesterNames
+    );
+    actvSemester.setAdapter(semAdapter);
+    actvSemester.setText(semesterNames[semIndex], false);
+
+    // change save button text
+    MaterialButton btnSave = sheetView.findViewById(R.id.btnSave);
+    btnSave.setText("Save Changes");
+
+    sheetView.findViewById(R.id.btnCancel)
+        .setOnClickListener(v -> sheet.dismiss());
+
+    btnSave.setOnClickListener(v -> {
+        String name    = etName.getText().toString().trim();
+        String credits = etCredits.getText().toString().trim();
+        String grade   = actvGrade.getText().toString().trim();
+        String semName = actvSemester.getText().toString().trim();
+
+        if (name.isEmpty()) {
+            etName.setError("Enter a course name");
+            return;
+        }
+        if (credits.isEmpty()) {
+            etCredits.setError("Enter credits");
+            return;
+        }
+
+        // figure out which semester was selected
+        int newSemIndex = semIndex; // default to current
+        for (int i = 0; i < semesterList.size(); i++) {
+            if (("Semester " + semesterList.get(i).getIndex()).equals(semName)) {
+                newSemIndex = i;
+                break;
+            }
+        }
+
+        // update course values
+        course.setName(name);
+        course.setCredits(Integer.parseInt(credits));
+        course.setGrade(grade);
+
+        // handle backlog changes if grade changed to/from F
+        if (grade.equals("F")) {
+            // add to backlog if not already there
+            boolean alreadyInBacklog = false;
+            for (BacklogCourse b : backlogCourses) {
+                if (b.getCourseName().equals(course.getName())) {
+                    alreadyInBacklog = true;
+                    break;
+                }
+            }
+            if (!alreadyInBacklog) {
+                backlogCourses.add(new BacklogCourse(course));
+            }
+        } else {
+            // remove from backlog if grade was fixed
+            backlogCourses.removeIf(b -> b.getCourseName().equals(course.getName()));
+        }
+        storage.saveBacklogCourses(backlogCourses);
+
+        // if semester changed, move the course
+        if (newSemIndex != semIndex) {
+            semesterList.get(semIndex).getCourses().remove(courseIndex);
+            semesterList.get(newSemIndex).getCourses().add(course);
+        }
+
+        storage.saveSemesters(semesterList);
+        sheet.dismiss();
+        updateUI();
+    });
+
+    sheet.show();
+   }
+
+   private void deleteCourse(int semIndex, int courseIndex) {
+//       semesterList.get(semIndex).getCourses().removeIf()
+   }
+
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return s.charAt(0) + s.substring(1).toLowerCase();
     }
 }
 

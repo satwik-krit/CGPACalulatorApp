@@ -2,12 +2,12 @@ package com.example.cgpacalculator;
 
 public class BacklogCourse {
 
-    public enum Status { FAILED, DROPPED, CLEARED }
+    public enum Status { FAILED, CLEARED, DROPPED }
 
     private String courseName;
     private int semesterNumber;
     private int credits;
-    private double gradeObtained;   // 0 if dropped/not attempted
+    private double gradeObtained;   // 0 if not attempted
     private Status status;
     private int attemptCount;
 
@@ -16,8 +16,16 @@ public class BacklogCourse {
         this.courseName = courseName;
         this.semesterNumber = semesterNumber;
         this.credits = credits;
-        this.gradeObtained = gradeObtained;
         this.status = status;
+        this.attemptCount = 1;
+    }
+
+    public BacklogCourse(Course c) {
+        this.courseName = c.getName();
+        this.semesterNumber = c.getSemesterNumber();
+        this.credits = c.getCredits();
+        this.gradeObtained = 'F';
+        this.status = Status.FAILED;
         this.attemptCount = 1;
     }
 
@@ -48,7 +56,6 @@ public class BacklogCourse {
     }
 
     public String getGradeLabel() {
-        if (status == Status.DROPPED) return "Not attempted";
         return "Grade obtained: " + String.format("%.1f", gradeObtained);
     }
 }

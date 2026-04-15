@@ -19,16 +19,24 @@ public class SemesterPagerAdapter extends RecyclerView.Adapter<SemesterPagerAdap
         void onCourseRemoved(int semesterIndex, int courseIndex);
     }
 
+    public interface OnCourseEditListener {
+        void onCourseEdit(int semesterIndex, int courseIndex);
+    }
+
     private final Context context;
     private final List<Semester> semesterList;
     private final OnCourseRemovedListener listener;
 
+    private final OnCourseEditListener editListener;
+
     public SemesterPagerAdapter(Context context,
                                 List<Semester> semesterList,
-                                OnCourseRemovedListener listener) {
-        this.context = context;
-        this.semesterList = semesterList;
-        this.listener = listener;
+                                OnCourseRemovedListener removeListener,
+                                OnCourseEditListener editListener) {
+        this.context        = context;
+        this.semesterList   = semesterList;
+        this.listener       = removeListener;
+        this.editListener   = editListener;
     }
 
     @NonNull
@@ -93,6 +101,8 @@ public class SemesterPagerAdapter extends RecyclerView.Adapter<SemesterPagerAdap
                         .setOnClickListener(v ->
                                 listener.onCourseRemoved(semIndex, courseIndex));
 
+                row.findViewById(R.id.btnEditCourse)
+                        .setOnClickListener(v -> editListener.onCourseEdit(semIndex, courseIndex));
                 layoutRows.addView(row);
             }
         }

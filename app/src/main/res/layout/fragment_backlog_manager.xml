@@ -213,16 +213,4 @@
         android:paddingBottom="80dp"
         android:clipToPadding="false"
         android:overScrollMode="never" />
-
-    <!-- FAB -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fabAddBacklog"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
-        android:text="Add backlog"
-        app:icon="@android:drawable/ic_input_add"
-        android:layout_marginBottom="80dp" />
-
 </LinearLayout>
